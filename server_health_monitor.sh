@@ -11,7 +11,6 @@ THRESHOLD_DISK=80
 
 # Intentionally no `set -e`; failures are handled per command so the menu keeps running.
 
-# Append one line to LOG_FILE, prefixed with `date` output.
 log_message() {
   local msg="$1"
   local ts
@@ -53,7 +52,7 @@ get_memory() {
   return 0
 }
 
-# Use % for / from df -P.
+# Disk usage % for / via df -P.
 get_disk() {
   local pct
   pct=$(df -P / 2>/dev/null | awk 'NR==2 { gsub(/%/,"",$5); print $5 }' || true)
@@ -184,7 +183,6 @@ view_logs() {
   echo "-------------------------------------------------"
 }
 
-# Primary interactive prompts (numbered 6–9).
 print_menu() {
   echo ""
   echo "======== Linux Server Health Monitor ========"
