@@ -1,12 +1,13 @@
 # Programming C Summative
 
-Three small programs for the same module: a Bash health monitor, a C student records app, and a threaded scraper that shells out to `curl`. Everything lives in this folder; clone it and follow the commands below.
+Three small programs for the same module: a Bash health monitor, a C student records app, and a threaded scraper that shells out to `curl`. Everything lives in this folder;  to test it clone it and follow the commands below.
+
 
 **What’s in the repo**
 
-- `server_health_monitor.sh` — Bash  
-- `academic_records.c` — C  
-- `web_scraper.c` — C with pthreads  
+- `server_health_monitor.sh` - Bash  
+- `academic_records.c` - C  
+- `web_scraper.c` - C with pthreads  
 
 When you run things you may get extra files next to them: `system.log`, `students.txt`, `output_1.txt` … `output_3.txt`, and whatever you name the compiled binaries (e.g. `academic_records.exe` on Windows). Add those to `.gitignore` if you don’t want them in git.
 
@@ -57,4 +58,4 @@ This is not a socket program; it’s only meant to show parallel work with pthre
 
 No `gcc`: install a toolchain or use WSL, then restart the terminal. Scraper says curl missing: install curl and check `curl --version`. Link errors about pthread: keep `-pthread` on the same gcc line as the source. Health script acts weird on CPU: look at what `top -bn1` prints on your machine. Empty `output_*.txt`: network might block those URLs; try others or HTTPS in the source.
 
-Coursework for Programming C — details are in the source files.
+Coursework for Programming C - details are in the source files.
