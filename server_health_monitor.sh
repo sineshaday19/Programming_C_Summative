@@ -21,16 +21,27 @@ log_message() {
   fi
 }
 
-# Busy CPU % from top(1) (100 − idle on the Cpu(s) line). Prints empty and fails if unreadable.
+# Busy CPU % from top(1) (100 − idle on the Cpu(s) line). WSL/procps can vary spacing; awk is more robust than sed.
 get_cpu() {
   local line idle
-  line=$(top -bn1 2>/dev/null | grep "Cpu(s)" || true)
+  # Second batch is often more stable than the first on some systems (incl. WSL).
+  line=$(top -bn2 2>/dev/null | grep "Cpu(s)" | tail -n 1 || true)
+  if [[ -z "$line" ]]; then
+    line=$(top -bn1 2>/dev/null | grep "Cpu(s)" || true)
+  fi
   if [[ -z "$line" ]]; then
     echo ""
     return 1
   fi
 
-  idle=$(echo "$line" | sed -n 's/.* \([0-9.]*\) id,.*/\1/p' || true)
+  idle=$(echo "$line" | awk -F',' '{
+    for (i = 1; i <= NF; i++) {
+      if ($i ~ /id/) {
+        gsub(/[^0-9.]/, "", $i)
+        if ($i != "") { print $i; exit }
+      }
+    }
+  }' || true)
   if [[ -z "$idle" ]] || ! [[ "$idle" =~ ^[0-9.]+$ ]]; then
     echo ""
     return 1
@@ -52,11 +63,15 @@ get_memory() {
   return 0
 }
 
-# Disk usage % for / via df -P.
+# Disk usage % for / via df -P (GNU/Linux layout). Rejects junk if columns differ (e.g. Git Bash).
 get_disk() {
   local pct
   pct=$(df -P / 2>/dev/null | awk 'NR==2 { gsub(/%/,"",$5); print $5 }' || true)
   if [[ -z "$pct" ]] || ! [[ "$pct" =~ ^[0-9]+$ ]]; then
+    echo ""
+    return 1
+  fi
+  if (( pct < 0 || pct > 100 )); then
     echo ""
     return 1
   fi
@@ -197,6 +212,9 @@ print_menu() {
 # Drives the UI until option 9 or EOF on stdin.
 main() {
   echo "Welcome. This script uses top, free, df, and ps. Logs go to '${LOG_FILE}'."
+  if [[ "$(uname -s 2>/dev/null)" != Linux ]]; then
+    echo "Note: meant for Linux (or WSL). Git Bash / macOS may show n/a or wrong metrics."
+  fi
 
   while true; do
     print_menu
